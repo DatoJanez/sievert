@@ -3,7 +3,29 @@
   <head>
   </head>
   <body>
+    <textarea>
+    </textarea>
+    <br/>
+    <button>check toxicity</button>
+    <div id="result"></div>
 <script>
+  if(window.location.indexOf("#")){
+   document.getElementsByTagName('textarea')[0].value = window.location.split("#")[1].split('_____').join('\n')
+  }
+  document.getElementsByTagName('button')[0].addEventListener('click', () => {
+    
+    fetch('http://207.154.252.11:11221/', {
+                method: 'POST',
+                body: document.getElementsByTagName('textarea')[0].value.split('\n').join("_____")
+            }).then(function(data){ 
+                document.getElementById("result").innerText = 'data'
+                console.log(data)
+            });;
+        
+
+  
+  })
+  
   var GoogleAuth;
   var SCOPE = 'https://www.googleapis.com/auth/drive.metadata.readonly';
   function handleClientLoad() {
@@ -80,13 +102,13 @@
 //     setSigninStatus();
 //   }
 </script>
-
+<!-- 
 <button id="sign-in-or-out-button"
         style="margin-left: 25px">Sign In/Authorize</button>
 <button id="revoke-access-button"
-        style="display: none; margin-left: 25px">Revoke access</button>
+        style="display: none; margin-left: 25px">Revoke access</button> -->
 
-<div id="auth-status" style="display: inline; padding-left: 25px"></div><hr>
+<!-- <div id="auth-status" style="display: inline; padding-left: 25px"></div><hr> -->
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script async defer src="https://apis.google.com/js/api.js"
