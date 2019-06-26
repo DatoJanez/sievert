@@ -9,7 +9,7 @@
     <button>check toxicity</button>
     <div id="result"></div>
 <script>
-  if(window.location.indexOf("#")){
+  if(window.location.includes("#")){
    document.getElementsByTagName('textarea')[0].value = window.location.split("#")[1].split('_____').join('\n')
   }
   document.getElementsByTagName('button')[0].addEventListener('click', () => {
