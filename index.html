@@ -3,14 +3,14 @@
   <head>
   </head>
   <body>
-    <textarea>
+    <textarea style="width:250px; height:150px;">
     </textarea>
     <br/>
     <button>check toxicity</button>
     <div id="result"></div>
 <script>
-  if(window.location.includes("#")){
-   document.getElementsByTagName('textarea')[0].value = window.location.split("#")[1].split('_____').join('\n')
+  if(window.location.href.includes("#")){
+   document.getElementsByTagName('textarea')[0].value = window.location.href.split("#")[1].split('_____').join('\n')
   }
   document.getElementsByTagName('button')[0].addEventListener('click', () => {
     
