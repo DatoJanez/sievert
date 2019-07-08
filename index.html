@@ -261,7 +261,7 @@ var preccess_ress = (raw_ress) => {
 }
 var fetch_sieverts = () => {
     document.getElementById('chart').innerHTML = ''
-    fetch('http://207.154.252.11:11221/?sub-reddit='+document.getElementById('keyword').value)
+    fetch('https://207.154.252.11:5000/?sub-reddit='+document.getElementById('keyword').value)
         .then((response) => response.json())
         .then(preccess_ress);
     // preccess_ress(sample_ress)
