@@ -3,21 +3,26 @@ var ress, i, rows, mappedData
 var parse_sivers_rec = (sieverts) => {
     count_s_values = 0
     aggr_sieverts = []
+    // console.log(sieverts)
     sieverts.forEach(value => {
+        aggr_sieverts.push(value[0])
+        count_s_values ++
         if(count_s_values == 12){
+            // console.log(aggr_sieverts, i)
             rows.push({date: new Date(ress.date[i]), sievert: aggr_sieverts});
             i++ 
             count_s_values = 0
             aggr_sieverts = []
+            
         }
-        aggr_sieverts.push(value[0])
-        count_s_values ++
+        
     })
 }
 var avarage = (data__) => {
-    
+    console.log(data__)
     var avg_graph_data = []
     data__.forEach(line => {
+        
         avg_single_int = {name: line.name, sieverts: []}
         var current_day_time = line.sieverts[0].date
         var count_values = 0
@@ -34,6 +39,7 @@ var avarage = (data__) => {
                 count_values_amount = val.sievert
             }
         })
+        
         avg_graph_data.push(avg_single_int)
     })
     return avg_graph_data
@@ -41,9 +47,14 @@ var avarage = (data__) => {
 var sievertTitles
 var preccess_ress = (raw_ress) => {
     let data = raw_ress
-    data.date = JSON.parse(data.date);
+    if(typeof data.date === 'string'){
+        data.date = JSON.parse(data.date);
+    }
+    if(typeof data.sieverts === 'string'){
+        data.sieverts = JSON.parse(data.sieverts);
+    }
     // data.sentences = JSON.parse(data.sentences);
-    data.sieverts = JSON.parse(data.sieverts);
+    // data.sieverts = typeof data.date === 'string' ? JSON.parse(data.sieverts) : data.sieverts; //JSON.parse(data.sieverts);
     ress = data
     // data = ress
     i = 0
@@ -64,7 +75,7 @@ var preccess_ress = (raw_ress) => {
     })
     
     avg_date = avarage(mappedData)
-    drow_chart(mappedData)
+    drow_chart(avg_date)
 }
 var fetch_sieverts = () => {
     document.getElementById('chart').innerHTML = ''
@@ -73,7 +84,7 @@ var fetch_sieverts = () => {
         .then(json_response => {
             db.open().then(() => db.sieverts.add({keyword: document.getElementById('keyword').value, value: json_response}))
             preccess_ress(json_response)
-            initSavedSiverets()
+            setTimeout(initSavedSiverets, 500)
         });
     // preccess_ress(sample_ress)
 }
