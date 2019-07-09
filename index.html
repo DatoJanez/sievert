@@ -1,273 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <style>
-  body {
-    font: 10px sans-serif;
-  }
-  
-  .axis path,
-  .axis line {
-    fill: none;
-    stroke: #000;
-    shape-rendering: crispEdges;
-  }
-  
-  .x.axis path {
-    display: none;
-  }
-  
-  .line {
-    fill: none;
-    stroke: steelblue;
-    stroke-width: 1.5px;
-  }
-  </style>
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    <link href="style.css" rel="stylesheet" type="text/css">
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="utf-8" http-equiv="encoding">
     <title>sievert</title>
 </head>
 <body>
-    <div><input id="keyword" /><button>check toxicity</button></div>
+    <div class="left-bar">
+        <input id="keyword" placeholder="keyword"/>
+        <!-- <input id="days" placeholder="days" value=""/> -->
+        <button>Analise the feed</button>
+        <br/><br/><br/><br/>
+        Style:
+        <button onClick="drow_chart(graphData)">Curved</button>
+        <button onClick="drow_chart(graphData, 'step')">Step</button> 
+        <br/><br/><br/><br/>
+        Download:
+        <button onClick="downloadCSV()">CSV</button>
+        <button onClick="downloadSVG()">SVG</button>
+        <br/><br/><br/><br/>
+        Saved charts:
+        <div id="saved">
+
+        </div>    
+        
+    </div>
+    
     <div id="chart"></div>
+    <script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
     <script src="https://d3js.org/d3.v4.min.js"></script>
-    
-    <script>
-  var graphData
-var drow_chart = (data_) => {
-    var data = data_
-    graphData = data_
-  
-    var width = 1100;
-    var height = 700;
-    var margin = 50;
-    var duration = 250;
-    
-    var lineOpacity = "0.7";
-    var lineOpacityHover = "1";
-    var otherLinesOpacityHover = "0.1";
-    var lineStroke = "1.5px";
-    var lineStrokeHover = "2.5px";
-    
-    var circleOpacity = '0.85';
-    var circleOpacityOnLineHover = "0.25"
-    var circleRadius = 3;
-    var circleRadiusHover = 6;
-    
-   /* Scale */
-    var xScale = d3.scaleTime()
-        .domain(d3.extent(data[0].values, d => d.date))
-        .range([0, width-margin]);
-
-    var yScale = d3.scaleLinear()
-        .domain([0, 8])
-        .range([height-margin, 0]);
-    
-    var color = d3.scaleOrdinal(d3.schemeCategory10);
-    
-    /* Add SVG */
-    var svg = d3.select("#chart").append("svg")
-        .attr("width", (width+margin)+"px")
-        .attr("height", (height+margin)+"px")
-        .append('g')
-        .attr("transform", `translate(${margin}, ${margin})`);
-    
-    
-    /* Add line into SVG */
-    var line = d3.line()
-        .x(d => xScale(d.date))
-        .y(d => yScale(d.price));
-    
-    let lines = svg.append('g')
-        .attr('class', 'lines');
-    
-    lines.selectAll('.line-group')
-        .data(data).enter()
-        .append('g')
-        .attr('class', 'line-group')  
-        .on("mouseover", function(d, i) {
-            svg.append("text")
-            .attr("class", "title-text")
-            .style("fill", color(i))        
-            .text(d.name)
-            .attr("text-anchor", "middle")
-            .attr("x", (width-margin)/2)
-            .attr("y", 5);
-        })
-        .on("mouseout", function(d) {
-            svg.select(".title-text").remove();
-        })
-        .append('path')
-        .attr('class', 'line')  
-        .attr('d', d => line(d.values))
-        .style('stroke', (d, i) => color(i))
-        .style('opacity', lineOpacity)
-        .style('fill', "none")
-        .on("mouseover", function(d) {
-            d3.selectAll('.line')
-                        .style('opacity', otherLinesOpacityHover);
-            d3.selectAll('.circle')
-                        .style('opacity', circleOpacityOnLineHover);
-            d3.select(this)
-            .style('opacity', lineOpacityHover)
-            .style("stroke-width", lineStrokeHover)
-            .style("cursor", "pointer");
-        })
-        .on("mouseout", function(d) {
-            d3.selectAll(".line")
-                        .style('opacity', lineOpacity);
-            d3.selectAll('.circle')
-                        .style('opacity', circleOpacity);
-            d3.select(this)
-            .style("stroke-width", lineStroke)
-            .style("cursor", "none");
-        });
-    
-    
-    /* Add circles in the line */
-    lines.selectAll("circle-group")
-        .data(data).enter()
-        .append("g")
-        .style("fill", (d, i) => color(i))
-        .selectAll("circle")
-        .data(d => d.values).enter()
-        .append("g")
-        .attr("class", "circle")  
-        .on("mouseover", function(d) {
-            d3.select(this)     
-            .style("cursor", "pointer")
-            .append("text")
-            .attr("class", "text")
-            .text(`${d.price}`)
-            .attr("x", d => xScale(d.date) + 5)
-            .attr("y", d => yScale(d.price) - 10);
-        })
-        .on("mouseout", function(d) {
-            d3.select(this)
-            .style("cursor", "none")  
-            .transition()
-            .duration(duration)
-            .selectAll(".text").remove();
-        })
-        .append("circle")
-        .attr("cx", d => xScale(d.date))
-        .attr("cy", d => yScale(d.price))
-        .attr("r", circleRadius)
-        .style('opacity', circleOpacity)
-        .on("mouseover", function(d) {
-            d3.select(this)
-                .transition()
-                .duration(duration)
-                .attr("r", circleRadiusHover);
-            })
-        .on("mouseout", function(d) {
-            d3.select(this) 
-                .transition()
-                .duration(duration)
-                .attr("r", circleRadius);  
-            });
-    
-    
-    /* Add Axis into SVG */
-    var xAxis = d3.axisBottom(xScale).ticks(5);
-    var yAxis = d3.axisLeft(yScale).ticks(5);
-    
-    svg.append("g")
-        .attr("class", "x axis")
-        .attr("transform", `translate(0, ${height-margin})`)
-        .call(xAxis);
-    
-    svg.append("g")
-        .attr("class", "y axis")
-        .call(yAxis)
-        .append('text')
-        .attr("y", 15)
-        .attr("transform", "rotate(-90)")
-        .attr("fill", "#000")
-        .text("Total values");
-}
-
-var ress, i, rows;
-    
-var parse_sivers_rec = (sieverts) => {
-    count_s_values = 0
-    aggr_sieverts = []
-    sieverts.forEach(value => {
-        if(count_s_values == 12){
-            rows.push({date: new Date(ress.date[i]), sievert: aggr_sieverts});
-            i++ 
-            count_s_values = 0
-            aggr_sieverts = []
-        }
-        aggr_sieverts.push(value[0])
-        count_s_values ++
-    })
-}
-var avarage = (data__) => {
-    
-    var avg_graph_data = []
-    data__.forEach(ff => {
-        avg_single_int = {name: ff.name, values: []}
-        var current_day_time = ff.values[0].date
-        var count_values = 0
-    var count_values_amount = 0  
-        ff.values.forEach(val => {
-        if(val.date.getMonth() == current_day_time.getMonth() & val.date.getDate() == current_day_time.getDate()){
-            count_values ++
-        count_values_amount += val.price
-        } else {
-        avg_single_int.values.push({date:current_day_time, price: (count_values_amount / count_values) })
-                count_values = 1
-        current_day_time = val.date
-        count_values_amount = val.price
-        }
-        })
-        avg_graph_data.push(avg_single_int)
-    })
-    return avg_graph_data
-}
-
-var preccess_ress = (raw_ress) => {
-    let data = raw_ress
-    data.date = JSON.parse(data.date);
-    // data.sentences = JSON.parse(data.sentences);
-    data.sieverts = JSON.parse(data.sieverts);
-    ress = data
-    // data = ress
-    i = 0
-    rows = []
-    sievert_csv = ''
-    parse_sivers_rec(data.sieverts)
-    
-    rows.sort((a, b) => a.date > b.date)
-    newData = [        { name: "a", values:[]},        { name: "b", values:[]},        { name: "c", values:[]},        { name: "d", values:[]},        { name: "e", values:[]},        { name: "f", values:[]},        { name: "g", values:[]},        { name: "g", values:[]},        { name: "i", values:[]},        { name: "j", values:[]},        { name: "k", values:[]} ]
-    rows.forEach(row => {
-        newData[0].values.push({date: new Date(row.date), price: (+row.sievert[0]) + 8})
-        newData[1].values.push({date: new Date(row.date), price: (+row.sievert[1]) + 8})
-        newData[2].values.push({date: new Date(row.date), price: (+row.sievert[2]) + 8})
-        newData[3].values.push({date: new Date(row.date), price: (+row.sievert[3]) + 8})
-        newData[4].values.push({date: new Date(row.date), price: (+row.sievert[4]) + 8})
-        newData[5].values.push({date: new Date(row.date), price: (+row.sievert[5]) + 8})
-        newData[6].values.push({date: new Date(row.date), price: (+row.sievert[6]) + 8})
-        newData[7].values.push({date: new Date(row.date), price: (+row.sievert[7]) + 8})
-        newData[8].values.push({date: new Date(row.date), price: (+row.sievert[8]) + 8})
-        newData[9].values.push({date: new Date(row.date), price: (+row.sievert[9]) + 8})
-        newData[10].values.push({date: new Date(row.date), price: (+row.sievert[10]) + 8})
-        // sievert_csv = sievert_csv || 'date	a	b	c	d	e	f	g	h	i\n'
-        // sievert_csv += (row.date.yyyymmdd() +'	' +         row.sievert[0] +'	'+         row.sievert[1] +'	'+         row.sievert[2] +'	'+         row.sievert[3] +'	'+         row.sievert[4] +'	'+         row.sievert[5] +'	'+         row.sievert[6] +'	'+         row.sievert[7] +'	'+         row.sievert[8] +'	'+         row.sievert[9] +'	'+         row.sievert[10] +'	'+         row.sievert[11] + '\n')
-    })
-    avg_date = avarage(newData)
-    drow_chart(avg_date)
-}
-var fetch_sieverts = () => {
-    document.getElementById('chart').innerHTML = ''
-    fetch('https://207.154.252.11:5000/?sub-reddit='+document.getElementById('keyword').value)
-        .then((response) => response.json())
-        .then(preccess_ress);
-    // preccess_ress(sample_ress)
-}
-document.getElementsByTagName('button')[0].addEventListener('click', fetch_sieverts)
-  </script>
+    <!-- <script src="data-format.js"></script> -->
+    <script src="https://raw.githubusercontent.com/DatoJanez/sievert/master/sample.js"></script>
+    <script src="https://raw.githubusercontent.com/DatoJanez/sievert/master/indexed.js"></script>
+    <script src="https://raw.githubusercontent.com/DatoJanez/sievert/master/chart.js"></script>
+    <script src="https://raw.githubusercontent.com/DatoJanez/sievert/master/api.js"></script>
 </body>
 
 </html>
